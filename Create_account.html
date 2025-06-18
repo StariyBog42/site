@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        body {
+            background-color: rgb(249, 249, 249);
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Create_account.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <title>Создать аккаунт</title>
+</head>
+
+<body>
+    <div class="Registracia">
+        <form action="/Create_acc" method="post" id="registration_form">
+            <!--Поле для регистрации-->
+            <fieldset class="pole">
+                <legend>Регистрация</legend>
+                <p class="Prosba">Пожалуйста, заполните эту форму, чтобы создать учетную запись.</p>
+                <label> E-mail:
+                    <input type="email" name="email" placeholder="Ваша почта" id="email" required class="Pochta">
+                </label>
+                <br>
+                <label> Пароль:
+                    <input type="password" name="password" placeholder="Введите пароль" id="password" required class="password">
+                </label>
+                <br>
+                <label>Повторите пароль:
+                    <input type="password" name="repeat_password" placeholder="Введите пароль еще раз"
+                        id="repeat_password" required class="Repeat">
+                </label>
+                <br>
+                <label> Имя пользователя:
+                    <input type="text" name="username" placeholder="Придумайте имя" id="username" required class="user">
+                </label>
+                <br>
+                <label> Номер телефона:
+                    <input type="tel" name="phone" placeholder="Введите номер телефона" pattern="\+?[0-9]{10,15}"
+                        title="Номер должен содержать от 10 до 15 цифр" id="phone" class="phone_number" value="+7">
+                </label>
+                <br>
+                <label> Возраст:
+                    <input type="date" name="age" id="Age" class="vosrast">
+                </label>
+                <br>
+                <br>
+                <label> Ваш пол:
+                    <p class="gender_male"><input type="radio" name="gender" value="Male"> Мужчина</p>
+                    <p class="gender_female"><input type="radio" name="gender" value="Female"> Женщина</p>
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" name="terms" id="terms" required>
+                    Я согласен(на) с условиями использования
+                </label>
+                <br>
+                <label>
+                    <button type="submit" class="registr">Зарегестрироваться</button>
+                </label>
+                <div class="error" id="error_registration"></div>
+                <div class="succsess" id="success_registration"></div>
+            </fieldset>
+        </form>
+    </div>
+
+    <br>
+    <br>
+    <div>
+        <h1 class="welcome">Еще не зарегестрировались?</h1>
+    </div>
+    <br>
+</body>
+
+</html>

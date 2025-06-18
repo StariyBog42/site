@@ -1,0 +1,85 @@
+body {
+    background: linear-gradient(135deg, #a259ff, #d19fff, #fbc2eb);
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.profile-box
+{
+    border: none;
+    padding: 40px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    background-color: #ffffff;
+    width: 100%;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+#calendar {
+  min-height: 500px;
+}
+
+.btn-settings,
+.btn-notifications {
+  position: absolute;
+  top: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-settings {
+  left: 20px;
+  background-color: #2ecc71; 
+}
+
+.btn-settings:hover {
+  background-color: #27ae60;
+}
+
+.btn-notifications {
+  left: 140px;
+  background-color: #f39c12; 
+}
+
+.btn-notifications:hover {
+  background-color: #e67e22;
+}
+
+.calendar {
+  position: absolute; 
+  right: 40px;
+  top: 40px;
+  width: 300px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.calendar:hover {
+  background-color: #b4c8ff;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    transition: border 0.2s ease;
+}

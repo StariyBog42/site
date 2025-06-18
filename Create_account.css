@@ -1,0 +1,126 @@
+body {
+    background: linear-gradient(135deg, #a259ff, #d19fff, #fbc2eb);
+    display: flex;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.Registracia {
+        right: 200px;
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+}
+
+fieldset.pole{
+    width: 300px;
+    height: auto;
+    border-radius: 13%;
+}
+
+.gender_male{
+    color: blue;
+}
+
+.gender_female{
+    color: rgb(209, 14, 46);
+}
+
+.registr{
+    right: 200px;
+    background-color: #a259ff;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+
+fieldset.pole{
+    right: -300px;
+        position: relative;
+    width: 700px;
+    height: auto;
+    border-radius: 5%;
+}
+
+.welcome{
+    position: relative;
+    top: -530px;
+    right: -370px;
+}
+
+.welcome_again{
+    position: relative;
+    top: -260px;
+    right: -250px;
+}
+.pole {
+    border: 1px solid #cfd507;
+    padding: 20px;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(236, 220, 4, 0.585);
+}
+
+.pole_vhod {
+    border: 1px solid #cfd507;
+    padding: 20px;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(236, 220, 4, 0.585);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+    text-align: left;
+    color: #333;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    transition: border 0.2s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #a259ff;
+    outline: none;
+}
+
+.pole {
+    border: none;
+    padding: 40px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    background-color: #ffffff;
+    width: 100%;
+    position: relative;
+    position: center;
+    transition: transform 0.3s ease;
+}
+
+.pole legend {
+    top: 200px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #40165c;
+    margin-bottom: 0px;
+}

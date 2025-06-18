@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Профиль</title>
+  <link rel="stylesheet" href="profile.css" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+  <style>
+    .profile-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    #calendar-section {
+      width: 900px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    #event-form {
+      margin-top: 20px;
+      display: none;
+    }
+    #event-form input, #event-form select {
+      display: block;
+      margin: 8px 0;
+      padding: 8px;
+      width: 100%;
+    }
+    #role-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #logout-button {
+      margin-top: 10px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <button class="btn-settings" onclick="openSettings()">Настройки</button>
+  <button onclick="toggleRole()" style="position: absolute; top: 20px; right: 20px;">Сменить роль</button>
+  <script>
+
+function handleCreateEvent() {
+  const title = document.getElementById('eventTitle').value.trim();
+  const date = document.getElementById('eventDate').value;
+  const time = document.getElementById('eventTime').value;
+  const location = document.getElementById('eventLocation').value.trim();
+  const organization = document.getElementById('eventOrg').value.trim();
+  
+
+  if (!title || !date || !time || !location || !organization) {
+    alert("Пожалуйста, заполните все поля.");
+    return;
+  }
+
+  fetch('/addEvent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, date, time, location, organization})
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        calendar.refetchEvents();
+        alert("Мероприятие создано");
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('eventTime').value = '';
+        document.getElementById('eventLocation').value = '';
+        document.getElementById('eventOrg').value = '';
+        checkboxes.forEach(cb => cb.checked = false);
+      } else {
+        alert("Ошибка при создании события: " + (data.error || "Неизвестная ошибка"));
+      }
+    })
+    .catch(error => {
+      console.error("Ошибка:", error);
+      alert("Произошла ошибка при отправке данных");
+    });
+}
+ 
+
+
+  </script>
+ <button class="btn-notifications" onclick="showNotifications()">Уведомления</button>
+<div id="event-form" class="calendar" style="margin-top: 20px;">
+  <h3>Создать мероприятие</h3>
+  <input type="text" id="eventTitle" placeholder="Название"><br>
+  <input type="date" id="eventDate"><br>
+  <input type="time" id="eventTime"><br>
+  <input type="text" id="eventLocation" placeholder="Место"><br>
+  <input type="text" id="eventOrg" placeholder="Организация"><br>
+  
+  
+  
+  <button onclick="handleCreateEvent()">Создать</button>
+</div>
+
+<div id="settings-form" style="display:none; padding: 20px; background: #f9f9f9; margin: 20px auto; max-width: 500px; border: 1px solid #ccc; border-radius: 10px;">
+  <h3>Редактировать профиль</h3>
+  <input id="newName" placeholder="Новое имя"><br>
+  <input id="newPhone" placeholder="Телефон"><br>
+  <input id="newAge" type="date" placeholder="Дата рождения"><br>
+  <select id="newGender">
+    <option value="">Выберите пол</option>
+    <option value="Male">Мужчина</option>
+    <option value="Female">Женщина</option>
+  </select><br>
+  <input id="newPassword" placeholder="Новый пароль" type="password"><br>
+  <input id="recoveryCode" placeholder="Код для сброса пароля"><br>
+  <button onclick="saveSettings()">Сохранить</button>
+  <button onclick="closeSettings()">Отмена</button>
+</div>
+
+
+  <div class="profile-box">
+    <h2>Профиль пользователя</h2>
+    <p><strong>Имя:</strong> <span id="username"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Телефон:</strong> <span id="phone"></span></p>
+    <p><strong>Возраст:</strong> <span id="age"></span></p>
+    <p><strong>Пол:</strong> <span id="gender"></span></p>
+    <p><strong>Роль:</strong> <span id="role"></span></p>
+    <a href="#" id="logout-button" onclick="logout()">Выйти</a>
+  </div>
+
+  <div id="calendar-section">
+    <h2>Календарь мероприятий</h2>
+    <div id="calendar"></div>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+  <script>
+    let calendar;
+    let user = JSON.parse(localStorage.getItem('userData'));
+    let role = localStorage.getItem('userRole') || 'participant';
+
+    if (!user) {
+      alert("Вы не вошли в аккаунт!");
+      window.location.href = "/Vhod_account.html";
+    }
+
+    function calculateAge(birthDateString) {
+      const birthDate = new Date(birthDateString);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function translateGender(gender) {
+      return gender === "Male" ? "Мужчина" :
+             "Женщина";
+    }
+
+    function renderUserInfo() {
+      document.getElementById('username').innerText = user.username;
+      document.getElementById('email').innerText = user.email;
+      document.getElementById('phone').innerText = user.phone;
+      document.getElementById('age').innerText = calculateAge(user.age) + " лет";
+      document.getElementById('gender').innerText = translateGender(user.gender);
+      document.getElementById('role').innerText = role === 'leader' ? 'Руководитель' : 'Участник';
+      document.getElementById('event-form').style.display = role === 'leader' ? 'block' : 'none';
+    }
+
+function saveSettings() {
+  const newName = document.getElementById('newName').value.trim();
+  const newPhone = document.getElementById('newPhone').value.trim();
+  const newAge = document.getElementById('newAge').value.trim();
+  const newGender = document.getElementById('newGender').value;
+  const newPassword = document.getElementById('newPassword').value.trim();
+  const recoveryCode = document.getElementById('recoveryCode').value.trim();
+
+  const user = JSON.parse(localStorage.getItem('userData'));
+
+  if (!recoveryCode) {
+    alert("Введите рекавери-код");
+    return;
+  }
+
+fetch('/getAllUsers')
+  .then(res => res.json())
+  .then(users => {
+    const container = document.getElementById('participant-list');
+    container.innerHTML = '';
+    users.forEach(user => {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = user.username;
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(" " + user.username));
+      container.appendChild(label);
+      container.appendChild(document.createElement('br'));
+    });
+  })
+  .catch(err => {
+    console.error('Ошибка загрузки пользователей:', err);
+  });
+
+
+  fetch('/updateProfile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: user.email,
+      recoveryCode,
+      newName,
+      newPhone,
+      newAge,
+      newGender,
+      newPassword
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Профиль обновлён");
+        const updatedUser = {
+          ...user,
+          username: newName || user.username,
+          phone: newPhone || user.phone,
+          age: newAge || user.age,
+          gender: newGender || user.gender
+        };
+        localStorage.setItem('userData', JSON.stringify(updatedUser));
+        renderUserInfo();
+        closeSettings();
+      } else {
+        alert("Ошибка: " + data.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Ошибка при обновлении профиля");
+    });
+}
+
+
+
+    function toggleRole() {
+  role = (role === 'participant') ? 'leader' : 'participant';
+  localStorage.setItem('userRole', role);
+
+  fetch('/changeRole', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: user.email, role })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Ошибка сервера');
+    return res.json();
+  })
+  .then(() => {
+    alert("Роль изменена на: " + (role === 'leader' ? 'Руководитель' : 'Участник'));
+    renderUserInfo();
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Ошибка при смене роли: " + error.message);
+  });
+}
+
+function openSettings() {
+  document.getElementById('settings-form').style.display = 'block';
+}
+
+function closeSettings() {
+  document.getElementById('settings-form').style.display = 'none';
+}
+
+
+    function logout() {
+      localStorage.removeItem('userData');
+      localStorage.removeItem('loggedIn');
+      localStorage.removeItem('userRole');
+      window.location.href = "/Main_Update.html";
+    }
+
+    function populateParticipantsList() {
+      const select = document.getElementById('event-participants');
+      select.innerHTML = '';
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      users.forEach(u => {
+        const option = document.createElement('option');
+        option.value = u.username;
+        option.text = u.username;
+        select.appendChild(option);
+      });
+    }
+
+    function addEvent() {
+      const title = document.getElementById('event-title').value.trim();
+      const date = document.getElementById('event-date').value;
+      const place = document.getElementById('event-place').value.trim();
+      const org = document.getElementById('event-org').value.trim();
+      const participantsSelect = document.getElementById('event-participants');
+      const participants = Array.from(participantsSelect.selectedOptions).map(opt => opt.value);
+
+      if (!title || !date || !place || !org) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
+
+      const fullTitle = `${title} (${org}, ${place})\nУчастники: ${participants.join(', ')}`;
+      calendar.addEvent({ title: fullTitle, start: date });
+      document.getElementById('event-title').value = '';
+      document.getElementById('event-date').value = '';
+      document.getElementById('event-place').value = '';
+      document.getElementById('event-org').value = '';
+      participantsSelect.selectedIndex = -1;
+    }
+
+   document.addEventListener('DOMContentLoaded', function() {
+  renderUserInfo();
+
+  const calendarEl = document.getElementById('calendar');
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 500,
+    eventSources: [
+      {
+        url: '/getEvents',
+        method: 'GET',
+        failure: function() {
+          alert('Ошибка загрузки событий');
+        }
+      }
+    ],
+    eventClick: function(info) {
+  const userRole = localStorage.getItem('userRole');
+  const eventId = info.event.id;
+  const username = user.username;
+
+  if (userRole === 'leader') {
+    const newTitle = prompt("Название мероприятия:", info.event.title);
+    const newDate = prompt("Дата (гггг-мм-дд):", info.event.startStr.slice(0, 10));
+    const newTime = prompt("Время (чч:мм):", info.event.extendedProps.time || "");
+    const newLocation = prompt("Место проведения:", info.event.extendedProps.location || "");
+    const newOrg = prompt("Организация:", info.event.extendedProps.organization || "");
+
+    if (newTitle && newDate && newTime && newLocation && newOrg) {
+      const cancelEvent = confirm("Отменить мероприятие?");
+      if (cancelEvent) {
+        fetch('/deleteEvent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: eventId })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Ошибка удаления");
+          return res.json();
+        })
+        .then(() => {
+          calendar.refetchEvents();
+          alert("Мероприятие отменено");
+        })
+        .catch(err => {
+          alert("Ошибка при отмене: " + err.message);
+        });
+      } else {
+        fetch('/editEvent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: eventId,
+            title: newTitle,
+            date: newDate,
+            time: newTime,
+            location: newLocation,
+            organization: newOrg
+          })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Ошибка обновления");
+          return res.json();
+        })
+        .then(() => {
+          calendar.refetchEvents();
+          alert("Событие обновлено");
+        })
+        .catch(err => {
+          alert("Ошибка при обновлении: " + err.message);
+        });
+      }
+    }
+  }
+
+  else if (userRole === 'participant') {
+    const title = info.event.title;
+    const time = info.event.extendedProps.time || "не указано";
+    const location = info.event.extendedProps.location || "не указано";
+    const org = info.event.extendedProps.organization || "не указано";
+    const participants = info.event.extendedProps.participants || [];
+
+    const alreadyJoined = participants.includes(username);
+    const message = 
+      `Название: ${title}\n` +
+      `Время: ${time}\n` +
+      `Место: ${location}\n` +
+      `Организация: ${org}\n\n` +
+      (alreadyJoined ? "Вы уже участвуете. Хотите отказаться от участия?" : "Вы хотите присоединиться к мероприятию?");
+
+    if (confirm(message)) {
+      fetch('/toggleParticipation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: eventId,
+          username: username,
+          join: !alreadyJoined
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(alreadyJoined ? "Вы отказались от участия." : "Вы присоединились к мероприятию.");
+          calendar.refetchEvents();
+        } else {
+          alert("Ошибка: " + data.message);
+        }
+      })
+      .catch(err => {
+        alert("Ошибка при обновлении участия: " + err.message);
+      });
+    }
+  }
+}
+  });
+  calendar.render();
+});
+function showNotifications() {
+  fetch('/getNotifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username: user.username }) 
+  })
+  .then(res => res.json())
+  .then(data => {
+    const list = document.getElementById('notification-list');
+    list.innerHTML = '';
+    
+    if (data.notifications && data.notifications.length > 0) {
+      data.notifications.forEach(n => {
+        const li = document.createElement('li');
+        li.textContent = n.message || "Уведомление без текста";
+        list.appendChild(li);
+      });
+    } else {
+      const li = document.createElement('li');
+      li.textContent = 'Нет новых уведомлений.';
+      list.appendChild(li);
+    }
+
+    document.getElementById('notifications-panel').style.display = 'block'; 
+  })
+  .catch(err => {
+    console.error("Ошибка загрузки уведомлений:", err);
+    alert("Не удалось загрузить уведомления");
+  });
+}
+
+
+function closeNotifications() {
+  document.getElementById('notifications-panel').style.display = 'none';
+}
+
+
+fetch('/getNotifications', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ username: user.username })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.success) {
+    data.notifications.forEach(n => {
+      console.log(n.message);
+    });
+  }
+});
+  </script>
+  <div id="notifications-panel" style="display:none; position:fixed; top:60px; left:20px; background:white; border:1px solid #ccc; padding:10px; width:300px; max-height:400px; overflow-y:auto; box-shadow:0 4px 8px rgba(0,0,0,0.2); border-radius:8px; z-index:1000;">
+  <h4>Уведомления</h4>
+  <ul id="notification-list"></ul>
+  <button onclick="closeNotifications()">Закрыть</button>
+</div>
+</body>
+</html>
+
+
