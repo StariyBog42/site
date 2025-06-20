@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -351,100 +350,107 @@ function closeSettings() {
   const eventId = info.event.id;
   const username = user.username;
 
-  if (userRole === 'leader') {
-    const newTitle = prompt("Название мероприятия:", info.event.title);
-    const newDate = prompt("Дата (гггг-мм-дд):", info.event.startStr.slice(0, 10));
-    const newTime = prompt("Время (чч:мм):", info.event.extendedProps.time || "");
-    const newLocation = prompt("Место проведения:", info.event.extendedProps.location || "");
-    const newOrg = prompt("Организация:", info.event.extendedProps.organization || "");
+  const title = info.event.title;
+  const time = info.event.extendedProps.time || "не указано";
+  const location = info.event.extendedProps.location || "не указано";
+  const org = info.event.extendedProps.organization || "не указано";
+  const participants = info.event.extendedProps.participants || [];
 
-    if (newTitle && newDate && newTime && newLocation && newOrg) {
-      const cancelEvent = confirm("Отменить мероприятие?");
-      if (cancelEvent) {
-        fetch('/deleteEvent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: eventId })
-        })
-        .then(res => {
-          if (!res.ok) throw new Error("Ошибка удаления");
-          return res.json();
-        })
-        .then(() => {
-          calendar.refetchEvents();
-          alert("Мероприятие отменено");
-        })
-        .catch(err => {
-          alert("Ошибка при отмене: " + err.message);
-        });
+  const alreadyJoined = participants.includes(username);
+  const participantList = participants.length > 0 ? participants.join(', ') : 'никто не участвует';
+  const participantCount = participants.length;
+
+  let message = 
+    `Название: ${title}\n` +
+    `Время: ${time}\n` +
+    `Место: ${location}\n` +
+    `Организация: ${org}\n` +
+    `Участников: ${participantCount}\n` +
+    `Список участников: ${participantList}\n\n`;
+
+  message += alreadyJoined ? "Вы уже участвуете. Хотите отказаться от участия?" : "Вы хотите присоединиться к мероприятию?";
+
+  if (confirm(message)) {
+    fetch('/toggleParticipation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventId: eventId,
+        username: username,
+        join: !alreadyJoined
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(alreadyJoined ? "Вы отказались от участия." : "Вы присоединились к мероприятию.");
+        calendar.refetchEvents();
       } else {
-        fetch('/editEvent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: eventId,
-            title: newTitle,
-            date: newDate,
-            time: newTime,
-            location: newLocation,
-            organization: newOrg
+        alert("Ошибка: " + data.message);
+      }
+    })
+    .catch(err => {
+      alert("Ошибка при обновлении участия: " + err.message);
+    });
+  }
+  if (userRole === 'leader') {
+    const edit = confirm("Хотите отредактировать или отменить мероприятие?");
+    if (edit) {
+      const newTitle = prompt("Название мероприятия:", info.event.title);
+      const newDate = prompt("Дата (гггг-мм-дд):", info.event.startStr.slice(0, 10));
+      const newTime = prompt("Время (чч:мм):", info.event.extendedProps.time || "");
+      const newLocation = prompt("Место проведения:", info.event.extendedProps.location || "");
+      const newOrg = prompt("Организация:", info.event.extendedProps.organization || "");
+
+      if (newTitle && newDate && newTime && newLocation && newOrg) {
+        const cancelEvent = confirm("Отменить мероприятие?");
+        if (cancelEvent) {
+          fetch('/deleteEvent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: eventId })
           })
-        })
-        .then(res => {
-          if (!res.ok) throw new Error("Ошибка обновления");
-          return res.json();
-        })
-        .then(() => {
-          calendar.refetchEvents();
-          alert("Событие обновлено");
-        })
-        .catch(err => {
-          alert("Ошибка при обновлении: " + err.message);
-        });
+          .then(res => {
+            if (!res.ok) throw new Error("Ошибка удаления");
+            return res.json();
+          })
+          .then(() => {
+            calendar.refetchEvents();
+            alert("Мероприятие отменено");
+          })
+          .catch(err => {
+            alert("Ошибка при отмене: " + err.message);
+          });
+        } else {
+          fetch('/editEvent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: eventId,
+              title: newTitle,
+              date: newDate,
+              time: newTime,
+              location: newLocation,
+              organization: newOrg
+            })
+          })
+          .then(res => {
+            if (!res.ok) throw new Error("Ошибка обновления");
+            return res.json();
+          })
+          .then(() => {
+            calendar.refetchEvents();
+            alert("Событие обновлено");
+          })
+          .catch(err => {
+            alert("Ошибка при обновлении: " + err.message);
+          });
+        }
       }
     }
   }
-
-  else if (userRole === 'participant') {
-    const title = info.event.title;
-    const time = info.event.extendedProps.time || "не указано";
-    const location = info.event.extendedProps.location || "не указано";
-    const org = info.event.extendedProps.organization || "не указано";
-    const participants = info.event.extendedProps.participants || [];
-
-    const alreadyJoined = participants.includes(username);
-    const message = 
-      `Название: ${title}\n` +
-      `Время: ${time}\n` +
-      `Место: ${location}\n` +
-      `Организация: ${org}\n\n` +
-      (alreadyJoined ? "Вы уже участвуете. Хотите отказаться от участия?" : "Вы хотите присоединиться к мероприятию?");
-
-    if (confirm(message)) {
-      fetch('/toggleParticipation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventId: eventId,
-          username: username,
-          join: !alreadyJoined
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert(alreadyJoined ? "Вы отказались от участия." : "Вы присоединились к мероприятию.");
-          calendar.refetchEvents();
-        } else {
-          alert("Ошибка: " + data.message);
-        }
-      })
-      .catch(err => {
-        alert("Ошибка при обновлении участия: " + err.message);
-      });
-    }
-  }
 }
+
   });
   calendar.render();
 });
@@ -510,5 +516,4 @@ fetch('/getNotifications', {
 </div>
 </body>
 </html>
-
 
